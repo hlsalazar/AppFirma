@@ -1,7 +1,25 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
+import React, { useState } from 'react';
+import { Alert, Button, Modal, StyleSheet, Text, View } from 'react-native';
 
-const PerfilScreen = () => {
+const PerfilScreen =() => {
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const pickDocument = async () => {
+    try {
+      let result = await DocumentPicker.getDocumentAsync({
+        type: 'application/pdf',
+        copyToCacheDirectory: true,
+      });
+
+      if (result.type === 'success') {
+        setModalVisible(true);
+      }
+    } catch (error) {
+      Alert.alert("Error", "Hubo un problema al seleccionar el documento.");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Perfil</Text>
@@ -13,6 +31,20 @@ const PerfilScreen = () => {
       <Text style={styles.field}>[CI del usuario]</Text>
       <Text style={styles.label}>Correo</Text>
       <Text style={styles.field}>[Correo del usuario]</Text>
+      <Button title="Subir firma (PDF)" onPress={pickDocument} />
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>Datos agregados</Text>
+            <Button title="Cerrar" onPress={() => setModalVisible(false)} />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
