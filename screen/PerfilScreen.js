@@ -1,4 +1,5 @@
 import * as DocumentPicker from 'expo-document-picker';
+import * as LocalAuthentication from 'expo-local-authentication';
 import React, { useState } from 'react';
 import { Alert, Button, Modal, StyleSheet, Text, View } from 'react-native';
 
@@ -20,6 +21,27 @@ const PerfilScreen =() => {
     }
   };
 
+  const authenticate = async () => {
+    const hasHardware = await LocalAuthentication.hasHardwareAsync();
+    if (!hasHardware) {
+      Alert.alert("Error", "Tu dispositivo no soporta autenticación biométrica.");
+      return;
+    }
+
+    const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+    if (!isEnrolled) {
+      Alert.alert("Error", "No tienes huella digital o Face ID registrado en este dispositivo.");
+      return;
+    }
+
+    const result = await LocalAuthentication.authenticateAsync();
+    if (result.success) {
+      setModalVisible(true);
+    } else {
+      Alert.alert("Error", "Fallo en la autenticación.");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Perfil</Text>
@@ -32,19 +54,7 @@ const PerfilScreen =() => {
       <Text style={styles.label}>Correo</Text>
       <Text style={styles.field}>[Correo del usuario]</Text>
       <Button title="Subir firma (PDF)" onPress={pickDocument} />
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>Datos agregados</Text>
-            <Button title="Cerrar" onPress={() => setModalVisible(false)} />
-          </View>
-        </View>
-      </Modal>
+      <Button title="Registrar Huella/Face ID" onPress={authenticate} />
     </View>
   );
 }
